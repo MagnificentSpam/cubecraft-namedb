@@ -38,24 +38,24 @@ with db_conn:
 
 for i in range(args.start_id, args.end_id):
     time.sleep(args.delay / 1000)
+    user_profile = session.get('https://www.cubecraft.net/members/{}/'.format(i))
+    if user_profile.status_code != 200:
+        continue
+    name = user_profile.html.find('.username', first=True).text.split('\n')[0]
+    progress = (i - args.start_id) / (args.end_id - args.start_id)
+    print('{:.2f}% - {}'.format(progress * 100, name))
+    playername_html = user_profile.html.find('.playerUsername', first=True)
+    playername = playername_html.text if playername_html is not None else None
+    infoblock_html = user_profile.html.find('.infoBlock dl dd')
+    joined = infoblock_html[1].text
+    messages = int(re.sub(r'\D', '', infoblock_html[2].text))
+    previous_names = set()
+    for name_change in user_profile.html.find('#usernameHistory div ul li'):
+        change = name_change.search('On <b>{time}</b> the username was changed from <b>{from}</b> to <b>{to}</b>.')
+        previous_names.add(change['from'])
+    previous_names.discard(name)
     with db_conn:
-        user_profile = session.get('https://www.cubecraft.net/members/{}/'.format(i))
-        if user_profile.status_code != 200:
-            continue
-        name = user_profile.html.find('.username', first=True).text.split('\n')[0]
-        progress = (i - args.start_id) / (args.end_id - args.start_id)
-        print('{:.2f}% - {}'.format(progress * 100, name))
-        playername_html = user_profile.html.find('.playerUsername', first=True)
-        playername = playername_html.text if playername_html is not None else None
-        infoblock_html = user_profile.html.find('.infoBlock dl dd')
-        joined = infoblock_html[1].text
-        messages = int(re.sub(r'\D', '', infoblock_html[2].text))
         db_conn.execute(INSERT_USER_STATEMENT, [i, name, playername, joined, messages])
-        previous_names = set()
-        for name_change in user_profile.html.find('#usernameHistory div ul li'):
-            change = name_change.search('On <b>{time}</b> the username was changed from <b>{from}</b> to <b>{to}</b>.')
-            previous_names.add(change['from'])
-        previous_names.discard(name)
         for oldname in previous_names:
             db_conn.execute(INSERT_OLDNAME_STATEMENT, [i, oldname])
 

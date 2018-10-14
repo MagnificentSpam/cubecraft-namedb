@@ -6,7 +6,7 @@ Requirements: `sqlite3`
 ```
 git clone https://github.com/MagnificentSpam/cubecraft-namedb`
 cd cubecraft-namedb
-venv -p python3 venv
+virtualenv -p python3 venv
 . venv/bin/activate
 pip install requests-html
 ```
