@@ -24,7 +24,26 @@ This will take a VERY long time.
 
 ## Results
 
-The results are stored in two table with the following schemas:
+The results are stored as an sqlite3 database in two tables with the following columns:
+
+`users`:
+
+|Column|Description|
+|------|-----------|
+|id|Profile id from the url|
+|name|Current name|
+|playername|Minecraft username or NULL if not linked|
+|joined|Date joined, string as formatted on the website (may be "Today" etc.)|
+|messages|Number of messages|
+
+`oldnames`:
+
+|Column|Description|
+|------|-----------|
+|user_id|Id of the corresponding user|
+|name|Old name of the user|
+
+### Example Queries
 
 `sqlite3` can be used to inspect the results.
 
